@@ -1,37 +1,66 @@
-const getUsers = (req, res) => {
-  const { q, nombre = "no name", apikey } = req.query;
+import { UserModel } from "../models/user_model.mjs";
+import { hashear } from "../utils/hashing.mjs";
+
+const getUsers = async (req, res) => {
+  const { limit = 5, from = 0 } = req.query;
+  const query = { status: true };
+
+  const [total, users] = await Promise.all([
+    UserModel.countDocuments(query),
+    UserModel.find(query).skip(Number(from)).limit(Number(limit)),
+  ]);
 
   res.json({
-    msg: "get API - controlador",
-    q,
-    nombre,
-    apikey,
+    total,
+    users,
   });
 };
 
-const putUsers = (req, res) => {
-  const { id } = req.params;
+const postUsers = async (req, res) => {
+  const { name, email, password, role } = req.body;
+  const userInstance = new UserModel({ name, email, password, role });
 
-  res.json({
-    msg: "put API - controlador",
-    id,
-  });
-};
+  //Encriptacion de password
+  userInstance.password = hashear(password);
 
-const postUsers = (req, res) => {
-  const { nombre, edad } = req.body;
+  await userInstance.save();
 
   res.status(201).json({
-    msg: "post API - controlador",
-    nombre,
-    edad,
+    msg: "Usuario creado correctamente",
+    userInstance,
   });
 };
 
-const deleteUsers = (req, res) => {
+const putUsers = async (req, res) => {
+  const { id } = req.params;
+  const { _id, password, google, email, ...props } = req.body;
+
+  if (password) {
+    props.password = hashear(password);
+  }
+
+  const user = await UserModel.findByIdAndUpdate(id, props, { new: true });
+
   res.json({
-    msg: "delete API - controlador",
+    msg: "Usuario editado correctamente",
+    user,
   });
+};
+
+const deleteUsers = async (req, res) => {
+  const { id } = req.params;
+
+  //Borrar fisicamente de la BD. NO RECOMENDADO
+  //const user = await UserModel.findByIdAndDelete(id);
+
+  //Cambiamos el estado del user a false
+  const user = await UserModel.findByIdAndUpdate(
+    id,
+    { status: false },
+    { new: true }
+  );
+
+  res.json(user);
 };
 
 const patchUsers = (req, res) => {
