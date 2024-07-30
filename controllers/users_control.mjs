@@ -50,17 +50,15 @@ const putUsers = async (req, res) => {
 const deleteUsers = async (req, res) => {
   const { id } = req.params;
 
-  //Borrar fisicamente de la BD. NO RECOMENDADO
-  //const user = await UserModel.findByIdAndDelete(id);
-
   //Cambiamos el estado del user a false
   const user = await UserModel.findByIdAndUpdate(
     id,
     { status: false },
     { new: true }
   );
+  const authUser = req.user;
 
-  res.json(user);
+  res.json({ user, authUser });
 };
 
 const patchUsers = (req, res) => {

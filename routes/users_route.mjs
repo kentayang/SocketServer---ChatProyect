@@ -1,5 +1,11 @@
 import { Router } from "express";
 import { check } from "express-validator";
+import { validate_fields } from "../middlewares/validate_fields.mjs";
+import { validate_jwt } from "../middlewares/validate_jwt.mjs";
+import {
+  validate_adminrole,
+  validate_roles,
+} from "../middlewares/validate_roles.mjs";
 import {
   getUsers,
   putUsers,
@@ -7,18 +13,17 @@ import {
   deleteUsers,
   patchUsers,
 } from "../controllers/users_control.mjs";
-import { users_validate } from "../middlewares/users_validate.mjs";
 import {
   role_isValid,
   email_exists,
   user_exists_byid,
 } from "../utils/db.validators.mjs";
 
-const router = Router();
+const users_router = Router();
 
-router.get("/", getUsers);
+users_router.get("/", getUsers);
 
-router.post(
+users_router.post(
   "/",
   [
     check("name", "El nombre es obligatorio").not().isEmpty(),
@@ -30,32 +35,35 @@ router.post(
     //check("role", "No es un rol permitido").isIn(["ADMIN_ROLE", "USER_ROLE"]),
     check("role").custom(role_isValid),
     check("email").custom(email_exists),
-    users_validate,
+    validate_fields,
   ],
   postUsers
 );
 
-router.put(
+users_router.put(
   "/:id",
   [
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(user_exists_byid),
     check("role").custom(role_isValid),
-    users_validate,
+    validate_fields,
   ],
   putUsers
 );
 
-router.patch("/", patchUsers);
+// users_router.patch("/", patchUsers);
 
-router.delete(
+users_router.delete(
   "/:id",
   [
+    validate_jwt,
+    //validate_adminrole,
+    validate_roles("ADMIN_ROLE", "ADMIN2_ROLE"),
     check("id", "No es un ID válido").isMongoId(),
     check("id").custom(user_exists_byid),
-    users_validate,
+    validate_fields,
   ],
   deleteUsers
 );
 
-export default router;
+export default users_router;
