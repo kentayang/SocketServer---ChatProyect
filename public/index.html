@@ -29,12 +29,12 @@
 
     <script src="https://accounts.google.com/gsi/client" async></script>
     <script>
-        function handleCredentialResponse(response) {
+        async function handleCredentialResponse(response) {
             const body = {
                 id_token: response.credential
             }
             
-            fetch(`${window.location.origin}/api/auth/google`,{
+            await fetch(`${window.location.origin}/api/auth/google`,{
                 method: "POST",
                 headers: {
                     "Content-Type":"application/json"
