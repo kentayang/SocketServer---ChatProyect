@@ -17,7 +17,7 @@ import {
   role_isValid,
   email_exists,
   user_exists_byid,
-} from "../utils/db.validators.mjs";
+} from "../utils/db-validators.mjs";
 
 const users_router = Router();
 

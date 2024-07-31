@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { UserModel } from "../models/user_model.mjs";
 import { createJWT } from "../utils/jsonwebtoken.mjs";
+import { google_verify } from "../utils/google-verify.mjs";
 
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -43,4 +44,46 @@ const login = async (req, res) => {
   }
 };
 
-export { login };
+const google_signin = async (req, res) => {
+  const { id_token } = req.body;
+
+  try {
+    const { name, img, email } = await google_verify(id_token);
+    //console.log(name, img, email);
+    let user = await UserModel.findOne({ email });
+    //console.log(user);
+    if (!user) {
+      const data = {
+        name,
+        email,
+        password: "xD",
+        role: "USER_ROLE",
+        img,
+        google: true,
+      };
+      user = new UserModel(data);
+      await user.save();
+    }
+
+    if (!user.status) {
+      return res.status(401).json({
+        msg: "Usuario bloqueado. Comuníquese con el administrador.",
+      });
+    }
+
+    //Generar JWT
+    const token = await createJWT(user.id);
+
+    res.json({
+      user,
+      token,
+    });
+  } catch (error) {
+    res.status(400).json({
+      ok: false,
+      msg: "El token no se pudo verificar",
+    });
+  }
+};
+
+export { login, google_signin };
