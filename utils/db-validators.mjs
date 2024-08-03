@@ -1,3 +1,5 @@
+import { CategoriaModel } from "../models/categoria_model.mjs";
+import { ProductoModel } from "../models/producto_model.mjs";
 import { RoleModel } from "../models/roles_model.mjs";
 import { UserModel } from "../models/user_model.mjs";
 
@@ -22,4 +24,24 @@ const user_exists_byid = async (_id) => {
   }
 };
 
-export { role_isValid, email_exists, user_exists_byid };
+const category_exists_byid = async (_id) => {
+  const categoryExists = await CategoriaModel.findOne({ _id });
+  if (!categoryExists) {
+    throw new Error(`El id de categoria ${_id} no existe`);
+  }
+};
+
+const product_exists_byid = async (_id) => {
+  const productExists = await ProductoModel.findOne({ _id });
+  if (!productExists) {
+    throw new Error(`El id de producto ${_id} no existe`);
+  }
+};
+
+export {
+  role_isValid,
+  email_exists,
+  user_exists_byid,
+  category_exists_byid,
+  product_exists_byid,
+};
