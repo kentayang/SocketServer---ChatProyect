@@ -38,10 +38,21 @@ const product_exists_byid = async (_id) => {
   }
 };
 
+const allowed_collections_image = async (collection = "", collections = []) => {
+  const isAllowed = collections.includes(collection);
+  if (!isAllowed) {
+    throw new Error(
+      `La colección ${collection} no está permitida, ${collections}`
+    );
+  }
+  return true;
+};
+
 export {
   role_isValid,
   email_exists,
   user_exists_byid,
   category_exists_byid,
   product_exists_byid,
+  allowed_collections_image,
 };

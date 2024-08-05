@@ -1,11 +1,13 @@
 import express from "express";
 import cors from "cors";
+import fileUpload from "express-fileupload";
 import users_router from "../routes/users_route.mjs";
 import auth_router from "../routes/auth_route.mjs";
 import { dbconnection } from "../database/db_config.mjs";
 import categorias_router from "../routes/categorias_route.mjs";
 import productos_router from "../routes/productos_route.mjs";
 import busquedas_router from "../routes/busquedas_route.mjs";
+import uploads_router from "../routes/uploads_route.mjs";
 
 class Server {
   constructor() {
@@ -17,6 +19,7 @@ class Server {
       categorias: "/api/categorias",
       productos: "/api/productos",
       busquedas: "/api/busquedas",
+      uploads: "/api/uploads",
     };
 
     //Conexion a BD
@@ -42,6 +45,15 @@ class Server {
 
     //Directorio público
     this.app.use(express.static("public"));
+
+    //Fileupload - Carga de archivos
+    this.app.use(
+      fileUpload({
+        useTempFiles: true,
+        tempFileDir: "/tmp/",
+        createParentPath: true,
+      })
+    );
   }
 
   routes() {
@@ -50,6 +62,7 @@ class Server {
     this.app.use(this.paths.categorias, categorias_router);
     this.app.use(this.paths.productos, productos_router);
     this.app.use(this.paths.busquedas, busquedas_router);
+    this.app.use(this.paths.uploads, uploads_router);
   }
 
   listen() {
