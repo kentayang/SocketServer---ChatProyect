@@ -86,4 +86,16 @@ const google_signin = async (req, res) => {
   }
 };
 
-export { login, google_signin };
+const renovate_token = async (req, res) => {
+  const { user } = req;
+
+  //Generar JWT
+  const token = await createJWT(user.id);
+
+  res.json({
+    user,
+    token,
+  });
+};
+
+export { login, google_signin, renovate_token };

@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import http from "http";
+import { Server as SocketServer } from "socket.io";
 import fileUpload from "express-fileupload";
 import users_router from "../routes/users_route.mjs";
 import auth_router from "../routes/auth_route.mjs";
@@ -8,11 +10,17 @@ import categorias_router from "../routes/categorias_route.mjs";
 import productos_router from "../routes/productos_route.mjs";
 import busquedas_router from "../routes/busquedas_route.mjs";
 import uploads_router from "../routes/uploads_route.mjs";
+import { socket_controller } from "../sockets/socket_controller.mjs";
 
 class Server {
   constructor() {
     this.app = express();
     this.port = process.env.PORT || 3000;
+
+    //Para socket.io
+    this.server = http.createServer(this.app);
+    this.io = new SocketServer(this.server);
+
     this.paths = {
       users: "/api/users",
       auth: "/api/auth",
@@ -30,6 +38,9 @@ class Server {
 
     //Rutas de mi App
     this.routes();
+
+    //Sockets
+    this.sockets();
   }
 
   async connect_database() {
@@ -65,8 +76,12 @@ class Server {
     this.app.use(this.paths.uploads, uploads_router);
   }
 
+  sockets() {
+    this.io.on("connection", (socket) => socket_controller(socket, this.io));
+  }
+
   listen() {
-    this.app.listen(this.port, () => {
+    this.server.listen(this.port, () => {
       console.log(`Escuchando en el puerto ${this.port}`);
     });
   }
